@@ -1,6 +1,6 @@
 package com.example.cocktails_app.core.service
 
-import com.example.prjets9.core.model.Category
+import com.example.cocktails_app.core.model.Category
 
 class CategoriesFetcher {
 

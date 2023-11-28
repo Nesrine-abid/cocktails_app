@@ -7,7 +7,6 @@ android {
     namespace = "com.example.cocktails_app"
     compileSdk = 34
 
-
     defaultConfig {
         applicationId = "com.example.cocktails_app"
         minSdk = 24
@@ -27,10 +26,16 @@ android {
             )
         }
     }
+
+    buildFeatures {
+        viewBinding=true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }

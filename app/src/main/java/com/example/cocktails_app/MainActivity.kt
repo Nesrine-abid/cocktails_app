@@ -1,11 +1,24 @@
 package com.example.cocktails_app
-
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import com.example.cocktails_app.databinding.ActivityMainBinding
+import com.example.cocktails_app.ui.coctaildetails.CoctailActivity
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
+
+    lateinit var binding : ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.start.setOnClickListener(this)
+    }
+
+    override fun onClick(v: View?) {
+        val intent = Intent(this, CoctailActivity::class.java)
+        startActivity(intent)
     }
 }
