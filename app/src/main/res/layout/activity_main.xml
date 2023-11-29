@@ -35,7 +35,7 @@
         android:id="@+id/start"
         android:layout_width="350dp"
         android:layout_height="60dp"
-        android:background="@drawable/rectangle_2_ek1_shape"
+        android:background="@drawable/bottom_shape"
         android:gravity="center"
         android:text="Get Started"
         android:textColor="@color/white"
