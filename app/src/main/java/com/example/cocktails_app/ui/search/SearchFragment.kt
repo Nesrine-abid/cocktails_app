@@ -5,7 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Cocktail
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +25,13 @@ class SearchFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: CocktailAdapter
+    private lateinit var cocktailsArrayList: ArrayList<Cocktail>
+
+    lateinit var imageId : Array<Int>
+    lateinit var heading : Array<String>
+    lateinit var cocktail: Array<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -56,5 +66,44 @@ class SearchFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        dataInitialize()
+        val layoutManager = LinearLayoutManager(context)
+        recyclerView = view.findViewById(R.id.recyclerViewSearch)
+        recyclerView.layoutManager = layoutManager
+        recyclerView.setHasFixedSize(true)
+        adapter = CocktailAdapter(cocktailsArrayList)
+        recyclerView.adapter = adapter
+    }
+    private fun dataInitialize(){
+        cocktailsArrayList = arrayListOf<Cocktail>()
+        imageId = arrayOf(
+            R.drawable.margarita,
+            R.drawable.mojito,
+            R.drawable.background,
+            R.drawable.negroni,
+            R.drawable.margarita,
+            R.drawable.mojito,
+            R.drawable.background,
+            R.drawable.negroni,
+        )
+        heading = arrayOf(
+            "Margarita",
+            "Mojito",
+            "red cocktail",
+            "negroni",
+            "Margarita 1",
+            "Mojito 1",
+            "red cocktail 1",
+            "negroni 1",
+        )
+
+        for (i in imageId.indices){
+            val cocktail = Cocktail(heading[i],imageId[i])
+            cocktailsArrayList.add(cocktail)
+        }
     }
 }

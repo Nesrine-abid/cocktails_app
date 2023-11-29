@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.example.cocktails_app.databinding.ActivityMainBinding
-import com.example.cocktails_app.ui.coctaildetails.CoctailActivity
+import com.example.cocktails_app.ui.coctaildetails.CocktailActivity
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
-        val intent = Intent(this, CoctailActivity::class.java)
+        val intent = Intent(this, CocktailActivity::class.java)
         startActivity(intent)
     }
 }
