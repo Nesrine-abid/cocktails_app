@@ -85,20 +85,20 @@ class SearchFragment : Fragment() {
             R.drawable.mojito,
             R.drawable.background,
             R.drawable.negroni,
-            R.drawable.margarita,
-            R.drawable.mojito,
-            R.drawable.background,
-            R.drawable.negroni,
+            R.drawable.drymartini,
+            R.drawable.whiskeysour,
+            R.drawable.bourbon,
+            R.drawable.oldfashioned,
         )
         heading = arrayOf(
             "Margarita",
             "Mojito",
-            "red cocktail",
-            "negroni",
-            "Margarita 1",
-            "Mojito 1",
-            "red cocktail 1",
-            "negroni 1",
+            "Red cocktail",
+            "Negroni",
+            "Dry Martini",
+            "Whiskey Sour",
+            "Bourbon",
+            "Old Fashioned",
         )
 
         for (i in imageId.indices){
