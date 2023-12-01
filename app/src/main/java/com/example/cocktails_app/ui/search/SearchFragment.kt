@@ -1,25 +1,23 @@
 package com.example.cocktails_app.ui.search
-
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
+import java.util.Locale
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SearchFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+//A simple [Fragment] subclass. Use the [SearchFragment.newInstance] factory method to create an instance of this fragment.
 class SearchFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -28,9 +26,10 @@ class SearchFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: CocktailAdapter
     private lateinit var cocktailsArrayList: ArrayList<Cocktail>
+    private lateinit var searchView: SearchView
 
     lateinit var imageId : Array<Int>
-    lateinit var heading : Array<String>
+    lateinit var cocktailsName : Array<String>
     lateinit var cocktail: Array<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,12 +71,42 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         dataInitialize()
         val layoutManager = LinearLayoutManager(context)
+        searchView = view.findViewById(R.id.searchView)
         recyclerView = view.findViewById(R.id.recyclerViewSearch)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
         adapter = CocktailAdapter(cocktailsArrayList)
         recyclerView.adapter = adapter
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterList(newText)
+                return true
+            }
+
+        })
     }
+
+    private fun filterList(query: String?) {
+        if (query!= null){
+            val filteredList = ArrayList<Cocktail>()
+            for (i in cocktailsArrayList) {
+                if (i.cocktailName.lowercase(Locale.ROOT).contains(query)) {
+                    filteredList.add(i)
+                }
+            }
+
+            if (filteredList.isEmpty()) {
+                Toast.makeText(context, "No Data found", Toast.LENGTH_SHORT).show()
+            } else {
+                adapter.setFilteredList(filteredList)
+            }
+        }
+    }
+
     private fun dataInitialize(){
         cocktailsArrayList = arrayListOf<Cocktail>()
         imageId = arrayOf(
@@ -90,7 +119,7 @@ class SearchFragment : Fragment() {
             R.drawable.bourbon,
             R.drawable.oldfashioned,
         )
-        heading = arrayOf(
+        cocktailsName = arrayOf(
             "Margarita",
             "Mojito",
             "Red cocktail",
@@ -102,7 +131,7 @@ class SearchFragment : Fragment() {
         )
 
         for (i in imageId.indices){
-            val cocktail = Cocktail(heading[i],imageId[i])
+            val cocktail = Cocktail(cocktailsName[i],imageId[i])
             cocktailsArrayList.add(cocktail)
         }
     }

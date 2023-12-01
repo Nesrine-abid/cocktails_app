@@ -10,11 +10,12 @@ import com.example.cocktails_app.core.model.Cocktail
 import com.google.android.material.imageview.ShapeableImageView
 
 class DataViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-    val titleImage: ShapeableImageView = itemView.findViewById(R.id.title_image)
-    val heading : TextView = itemView.findViewById (R.id.tvHeading)
+    val image: ShapeableImageView = itemView.findViewById(R.id.image)
+    val cocktailName : TextView = itemView.findViewById (R.id.cocktailName)
 }
 
-class CocktailAdapter(private val cocktails: ArrayList<Cocktail>) : RecyclerView.Adapter<DataViewHolder>() {
+class CocktailAdapter(private var cocktails: ArrayList<Cocktail>) :
+    RecyclerView.Adapter<DataViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val itemview = LayoutInflater.from(parent.context).inflate(
@@ -25,15 +26,18 @@ class CocktailAdapter(private val cocktails: ArrayList<Cocktail>) : RecyclerView
 
     override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
         val currentItem = cocktails[position]
-        currentItem.titleImage?.let { holder.titleImage.setImageResource(it) }
-        holder.heading.text = currentItem.heading
+        currentItem.imageId?.let { holder.image.setImageResource(it) }
+        holder.cocktailName.text = currentItem.cocktailName
     }
 
     override fun getItemCount(): Int {
         return cocktails.size
     }
 
-
+    fun setFilteredList(filteredList: ArrayList<Cocktail>) {
+        this.cocktails = filteredList
+        notifyDataSetChanged()
+    }
 }
 
 
