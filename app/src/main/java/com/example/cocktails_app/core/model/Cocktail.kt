@@ -1,4 +1,5 @@
 package com.example.cocktails_app.core.model
 
-class Cocktail {
-}
+data class Cocktail (val cocktailName: String, val imageId: Int)
+
+
