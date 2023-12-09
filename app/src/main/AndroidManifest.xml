@@ -13,6 +13,14 @@
         android:theme="@style/Theme.Cocktails_app"
         tools:targetApi="31">
         <activity
+            android:name=".ui.coctaildetails.RecipeDetails"
+            android:exported="false" />
+        <activity
+            android:name=".ui.coctaildetails.coctailDetails"
+            android:exported="false"
+            android:label="@string/title_activity_coctail_details"
+            android:theme="@style/Theme.Cocktails_app" />
+        <activity
             android:name=".ui.coctaildetails.CocktailActivity"
             android:exported="false" />
         <activity
