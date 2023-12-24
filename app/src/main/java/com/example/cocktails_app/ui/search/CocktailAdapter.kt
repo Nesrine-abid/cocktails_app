@@ -1,12 +1,12 @@
 package com.example.cocktails_app.ui.search
 
+import Cocktail
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.databinding.ActivityCoctailBinding
 import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
 import com.google.android.material.imageview.ShapeableImageView

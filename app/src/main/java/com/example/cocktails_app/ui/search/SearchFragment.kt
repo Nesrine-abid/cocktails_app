@@ -1,5 +1,6 @@
 package com.example.cocktails_app.ui.search
 
+import Cocktail
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import java.util.Locale
 private const val ARG_PARAM1 = "param1"
@@ -72,13 +72,11 @@ class SearchFragment : Fragment() {
             }
         })
 
-        adapter.onItemClick = { selectedCocktail ->
+        adapter.onItemClick = { selectedCocktail : Cocktail ->
             val intent = Intent(this.context, RecipeDetails::class.java)
             intent.putExtra("recipe", selectedCocktail)
             startActivity(intent)
         }
-
-
     }
 
     private fun filterList(query: String?) {

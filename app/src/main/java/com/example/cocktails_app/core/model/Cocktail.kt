@@ -1,7 +1,6 @@
-package com.example.cocktails_app.core.model
-
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 
 data class Cocktail(val cocktailName: String, val cocktailImage: Int) : Parcelable {
     constructor(parcel: Parcel) : this(

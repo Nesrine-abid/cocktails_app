@@ -1,13 +1,10 @@
 package com.example.cocktails_app.ui.coctaildetails
 
-import android.content.Intent
+import Cocktail
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
-import com.example.cocktails_app.ui.search.SearchFragment
 
 class RecipeDetails : AppCompatActivity() {
 
@@ -20,10 +17,8 @@ class RecipeDetails : AppCompatActivity() {
         setContentView(view)
 
         // Retrieve the Cocktail object from the intent
-        //val cocktail = intent.getSerializableExtra("recipe") as? Cocktail
         val cocktail = intent.getParcelableExtra<Cocktail>("recipe")
 
-//        val cocktail = Cocktail("Margarita", R.drawable.margarita)
         if (cocktail != null) {
             binding.imageView2.setImageResource(cocktail.cocktailImage)
             binding.textView.text = cocktail.cocktailName
