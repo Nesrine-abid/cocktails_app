@@ -1,4 +1,4 @@
-package com.example.cocktails_app.ui.categories
+package com.example.cocktails_app.ui.ingredients
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,13 +6,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Drink
+import com.example.cocktails_app.core.model.Drinks
 
 
 class DataViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     val drinks : TextView = itemView.findViewById(R.id.categoryName)
 }
-class CategoriesAdapter (private var categories: List<Drink>) :
+class IngredientsAdapter (private var ingredients: List<Drinks>) :
     RecyclerView.Adapter<DataViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
@@ -21,12 +21,13 @@ class CategoriesAdapter (private var categories: List<Drink>) :
         )
         return DataViewHolder(itemview)
     }
-    override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
-        val currentItem = categories[position]
-        holder.drinks.text = currentItem.categoryName
+    override fun onBindViewHolder(holder: DataViewHolder,
+                                  position: Int) {
+        val currentItem = ingredients[position]
+        holder.drinks.text = currentItem.ingredientName
 
     }
     override fun getItemCount(): Int {
-        return categories.size
+        return ingredients.size
     }
 }
