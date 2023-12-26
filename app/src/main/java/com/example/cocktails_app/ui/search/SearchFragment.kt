@@ -1,6 +1,7 @@
 package com.example.cocktails_app.ui.search
 
 import Cocktail
+import Cocktails
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +13,14 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Ingredient
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
+import com.example.cocktails_app.ui.ingredients.IngredientsAdapter
+import com.google.gson.Gson
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
 import java.util.Locale
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -22,9 +30,8 @@ class SearchFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+    private var originalCocktails: List<Cocktail> = emptyList()
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: CocktailAdapter
-    private lateinit var cocktailsArrayList: ArrayList<Cocktail>
     private lateinit var searchView: SearchView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,14 +59,46 @@ class SearchFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dataInitialize()
         val layoutManager = LinearLayoutManager(context)
+
         searchView = view.findViewById(R.id.searchView)
         recyclerView = view.findViewById(R.id.recyclerViewSearch)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
-        adapter = CocktailAdapter(cocktailsArrayList)
-        recyclerView.adapter = adapter
+
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Cocktail")
+            .build()
+
+        // Use enqueue for asynchronous network calls
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                // Handle failure
+            }
+
+            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                response.body?.let {
+                    val responseData = it.string()
+                    val gson = Gson()
+                    val cocktails = gson.fromJson(responseData, Cocktails::class.java)
+
+                    originalCocktails = cocktails.drinks
+
+                    activity?.runOnUiThread {
+                        val adapter = CocktailAdapter(originalCocktails)
+                        recyclerView.adapter = adapter
+                        adapter.notifyDataSetChanged()
+
+                        adapter.onItemClick = { selectedCocktail : Cocktail ->
+                            val intent = Intent(context, RecipeDetails::class.java)
+                            intent.putExtra("recipe", selectedCocktail)
+                            startActivity(intent)
+                        }
+                    }
+                }
+            }
+        })
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -71,56 +110,26 @@ class SearchFragment : Fragment() {
                 return true
             }
         })
-
-        adapter.onItemClick = { selectedCocktail : Cocktail ->
-            val intent = Intent(this.context, RecipeDetails::class.java)
-            intent.putExtra("recipe", selectedCocktail)
-            startActivity(intent)
-        }
     }
 
     private fun filterList(query: String?) {
         if (!query.isNullOrBlank()) {
             val filteredList = ArrayList<Cocktail>()
-            for (i in cocktailsArrayList) {
-                if (i.cocktailName.lowercase(Locale.ROOT).contains(query.lowercase(Locale.ROOT))) {
-                    filteredList.add(i)
+            for (cocktail in originalCocktails) {
+                if (cocktail.cocktailName.lowercase(Locale.ROOT).contains(query.lowercase(Locale.ROOT))) {
+                    filteredList.add(cocktail)
                 }
             }
 
             if (filteredList.isEmpty()) {
                 Toast.makeText(context, "No Data found", Toast.LENGTH_SHORT).show()
             } else {
-                adapter.setFilteredList(filteredList)
+                val adapter = recyclerView.adapter as? CocktailAdapter
+                adapter?.setFilteredList(filteredList)
             }
-        }
-    }
-
-    private fun dataInitialize() {
-        cocktailsArrayList = arrayListOf<Cocktail>()
-        val imageId = arrayOf(
-            R.drawable.margarita,
-            R.drawable.mojito,
-            R.drawable.background,
-            R.drawable.negroni,
-            R.drawable.drymartini,
-            R.drawable.whiskeysour,
-            R.drawable.bourbon,
-            R.drawable.oldfashioned
-        )
-        val cocktailsName = arrayOf(
-            "Margarita",
-            "Mojito",
-            "Red cocktail",
-            "Negroni",
-            "Dry Martini",
-            "Whiskey Sour",
-            "Bourbon",
-            "Old Fashioned"
-        )
-        for (i in imageId.indices) {
-            val cocktail = Cocktail(cocktailsName[i], imageId[i])
-            cocktailsArrayList.add(cocktail)
+        } else {
+            val adapter = recyclerView.adapter as? CocktailAdapter
+            adapter?.setFilteredList(originalCocktails)
         }
     }
 }

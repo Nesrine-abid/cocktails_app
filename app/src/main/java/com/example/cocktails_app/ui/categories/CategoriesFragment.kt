@@ -1,26 +1,34 @@
 package com.example.cocktails_app.ui.categories
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Category
+import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
+import com.example.cocktails_app.ui.search.CocktailAdapter
+import com.google.gson.Gson
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [CategoriesFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class CategoriesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+
     private var param1: String? = null
     private var param2: String? = null
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: CategoriesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,15 +47,6 @@ class CategoriesFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CategoriesFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             CategoriesFragment().apply {
@@ -56,5 +55,40 @@ class CategoriesFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val layoutManager = LinearLayoutManager(context)
+
+        recyclerView = view.findViewById(R.id.recyclerViewSearch2)
+        recyclerView.layoutManager = layoutManager
+        recyclerView.setHasFixedSize(true)
+
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list")
+            .build()
+
+        // Use enqueue for asynchronous network calls
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                // Handle failure
+            }
+
+            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                response.body?.let {
+                    val responseData = it.string()
+                    val gson = Gson()
+                    val categories = gson.fromJson(responseData, Category::class.java)
+
+                    activity?.runOnUiThread {
+                        adapter = CategoriesAdapter(categories.drinks)
+                        recyclerView.adapter = adapter
+                        // Notify your adapter that the data has changed
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+            }
+        })
     }
 }

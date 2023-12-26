@@ -4,6 +4,7 @@ import Cocktail
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import com.squareup.picasso.Picasso
 import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
 
 class RecipeDetails : AppCompatActivity() {
@@ -20,8 +21,9 @@ class RecipeDetails : AppCompatActivity() {
         val cocktail = intent.getParcelableExtra<Cocktail>("recipe")
 
         if (cocktail != null) {
-            binding.imageView2.setImageResource(cocktail.cocktailImage)
+            Picasso.get().load(cocktail.cocktailImage).into(binding.imageView2)
             binding.textView.text = cocktail.cocktailName
+            binding.instruction.text = cocktail.cocktailInstructions
         } else {
             // Handle the case where no valid Cocktail object is received
             Toast.makeText(this, "Invalid Cocktail", Toast.LENGTH_SHORT).show()

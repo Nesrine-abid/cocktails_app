@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.example.cocktails_app.databinding.ActivityMainBinding
-import com.example.cocktails_app.ui.coctaildetails.CocktailActivity
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
