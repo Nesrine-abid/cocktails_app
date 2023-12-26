@@ -7,16 +7,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.databinding.ActivityCoctailBinding
-import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
 import com.google.android.material.imageview.ShapeableImageView
+import com.squareup.picasso.Picasso
 
 class DataViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     val image: ShapeableImageView = itemView.findViewById(R.id.image)
     val cocktailName : TextView = itemView.findViewById (R.id.cocktailName)
 }
 
-class CocktailAdapter(private var cocktails: ArrayList<Cocktail>) :
+class CocktailAdapter(private var cocktails: List<Cocktail>) :
     RecyclerView.Adapter<DataViewHolder>() {
 
     var onItemClick : ((Cocktail) -> Unit)? = null
@@ -29,7 +28,7 @@ class CocktailAdapter(private var cocktails: ArrayList<Cocktail>) :
 
     override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
         val currentItem = cocktails[position]
-        currentItem.cocktailImage?.let { holder.image.setImageResource(it) }
+        Picasso.get().load(currentItem.cocktailImage).into(holder.image)
         holder.cocktailName.text = currentItem.cocktailName
 
         holder.itemView.setOnClickListener{
@@ -39,7 +38,7 @@ class CocktailAdapter(private var cocktails: ArrayList<Cocktail>) :
     override fun getItemCount(): Int {
         return cocktails.size
     }
-    fun setFilteredList(filteredList: ArrayList<Cocktail>) {
+    fun setFilteredList(filteredList: List<Cocktail>) {
         this.cocktails = filteredList
         notifyDataSetChanged()
     }

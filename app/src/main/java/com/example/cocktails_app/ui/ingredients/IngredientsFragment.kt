@@ -25,7 +25,6 @@ class IngredientsFragment : Fragment() {
     private var param2: String? = null
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: IngredientsAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
