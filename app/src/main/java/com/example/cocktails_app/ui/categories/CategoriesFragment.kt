@@ -2,10 +2,13 @@ package com.example.cocktails_app.ui.categories
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
@@ -29,6 +32,7 @@ class CategoriesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: CategoriesAdapter
+    private lateinit var loaderImageView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,10 +63,17 @@ class CategoriesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val layoutManager = LinearLayoutManager(context)
+        loaderImageView = view.findViewById(R.id.ivLoader)
 
+        // Initialize your RecyclerView here
         recyclerView = view.findViewById(R.id.recyclerViewSearch2)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
+        // Initialize your adapter with an empty list
+        adapter = CategoriesAdapter(emptyList())
+        recyclerView.adapter = adapter
+
+        showLoader()
 
         val client = OkHttpClient()
         val request = Request.Builder()
@@ -82,13 +93,33 @@ class CategoriesFragment : Fragment() {
                     val categories = gson.fromJson(responseData, Category::class.java)
 
                     activity?.runOnUiThread {
+
                         adapter = CategoriesAdapter(categories.drinks)
                         recyclerView.adapter = adapter
                         // Notify your adapter that the data has changed
                         adapter.notifyDataSetChanged()
+                        hideLoader()
                     }
                 }
             }
         })
+    }
+    private fun showLoader() {
+        activity?.runOnUiThread {
+            loaderImageView.visibility = View.VISIBLE
+            val rotateAnimation = AnimationUtils.loadAnimation(context, R.anim.rotate)
+            loaderImageView.startAnimation(rotateAnimation)
+            Log.d("CategoriesFragment", "Showing loader")
+        }
+    }
+
+    private fun hideLoader() {
+        loaderImageView.postDelayed({
+            activity?.runOnUiThread {
+                loaderImageView.clearAnimation()
+                loaderImageView.visibility = View.GONE
+            }
+        }, 3000) // Delay in
+        Log.d("CategoriesFragment", "hiding loader")// milliseconds
     }
 }

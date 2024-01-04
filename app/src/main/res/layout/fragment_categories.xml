@@ -6,6 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.categories.CategoriesFragment">
 
+    <!-- RecyclerView for displaying categories -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSearch2"
         android:layout_width="match_parent"
@@ -13,4 +14,13 @@
         app:layoutManager="GridLayoutManager"
         app:spanCount="2"
         tools:listitem="@layout/category_item" />
+
+    <!-- ImageView for the loader -->
+    <ImageView
+        android:id="@+id/ivLoader"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/loader"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 </FrameLayout>
