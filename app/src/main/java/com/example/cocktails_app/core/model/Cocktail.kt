@@ -128,7 +128,6 @@ data class Cocktail(
         if (!ingredient6.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient6: ${measure6 ?: ""}"))
         if (!ingredient7.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient7: ${measure7 ?: ""}"))
         if (!ingredient8.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient8: ${measure8 ?: ""}"))
-        // ... repeat for all ingredients
 
         return formattedIngredients
     }
