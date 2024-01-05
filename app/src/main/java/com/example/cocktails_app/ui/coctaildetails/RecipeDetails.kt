@@ -67,6 +67,8 @@ class RecipeDetails : AppCompatActivity() {
             Picasso.get().load(it.cocktailImage).into(binding.imageView2)
             binding.textView.text = it.cocktailName
             binding.instruction.text = it.cocktailInstructions
+            binding.category.text = "Category: ${it.category}"
+            binding.glass.text = "Served in: ${it.glass}"
 
             // Set up ingredients RecyclerView
             val ingredientsAdapter = IngredientsAdapter(it.getFormattedIngredients())
