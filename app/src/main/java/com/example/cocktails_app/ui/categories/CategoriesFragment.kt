@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Category
-import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
-import com.example.cocktails_app.ui.search.CocktailAdapter
 import com.google.gson.Gson
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -119,7 +117,7 @@ class CategoriesFragment : Fragment() {
                 loaderImageView.clearAnimation()
                 loaderImageView.visibility = View.GONE
             }
-        }, 3000) // Delay in
+        }, 1500) // Delay in
         Log.d("CategoriesFragment", "hiding loader")// milliseconds
     }
 }
