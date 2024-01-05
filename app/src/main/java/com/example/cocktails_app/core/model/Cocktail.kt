@@ -4,11 +4,16 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 
+data class Cocktails(
+    @SerializedName("drinks") val drinks: List<Cocktail>
+)
 data class Cocktail(
     @SerializedName("idDrink") val cocktailId: Int,
     @SerializedName("strDrink") val cocktailName: String,
     @SerializedName("strDrinkThumb") val cocktailImage: String,
     @SerializedName("strInstructions") val cocktailInstructions: String,
+    @SerializedName("strCategory") val category: String?,
+    @SerializedName("strGlass") val glass: String?,
 
     // Ingredients
     @SerializedName("strIngredient1") val ingredient1: String?,
@@ -42,6 +47,8 @@ data class Cocktail(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
         //ingredients
 
         parcel.readString() ,
@@ -62,11 +69,6 @@ data class Cocktail(
         parcel.readString() ,
         parcel.readString() ,
 
-
-        // Initializing all the ingredients and measures from the Parcel
-
-
-        // ... repeat for all ingredient and measure fields
     )
 
     // Write object data to the parcel
