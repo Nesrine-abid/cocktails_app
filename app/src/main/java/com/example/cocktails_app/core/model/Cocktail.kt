@@ -14,6 +14,8 @@ data class Cocktail(
     @SerializedName("strInstructions") val cocktailInstructions: String,
     @SerializedName("strCategory") val category: String?,
     @SerializedName("strGlass") val glass: String?,
+    @SerializedName("strAlcoholic") val alcoholic: String,
+
 
     // Ingredients
     @SerializedName("strIngredient1") val ingredient1: String?,
@@ -49,6 +51,8 @@ data class Cocktail(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
+
         //ingredients
 
         parcel.readString() ,

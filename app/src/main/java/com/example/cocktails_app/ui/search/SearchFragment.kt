@@ -89,10 +89,33 @@ class SearchFragment : Fragment() {
                         recyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
 
-                        adapter.onItemClick = { selectedCocktail: Cocktail ->
-                            val intent = Intent(context, RecipeDetails::class.java)
-                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId) // Pass the cocktail ID
-                            startActivity(intent)
+                        adapter.onItemClick = { selectedCocktail : Cocktail ->
+                            val client = OkHttpClient()
+                            val request = Request.Builder()
+                                .url("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${selectedCocktail.cocktailId}")
+                                .build()
+
+                            client.newCall(request).enqueue(object : Callback {
+                                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                                    // Handle failure
+                                }
+
+                                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                                    response.body?.let {
+                                        val responseData = it.string()
+                                        val gson = Gson()
+                                        val cocktailDetails = gson.fromJson(responseData, Cocktails::class.java)
+
+                                        val originalCocktail = cocktailDetails.drinks.firstOrNull()
+
+                                        if (originalCocktail != null) {
+                                            val intent = Intent(context, RecipeDetails::class.java)
+                                            intent.putExtra("recipe", originalCocktail)
+                                            startActivity(intent)
+                                        }
+                                    }
+                                }
+                            })
                         }
                     }
                 }
