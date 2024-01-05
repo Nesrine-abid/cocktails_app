@@ -1,7 +1,4 @@
 package com.example.cocktails_app.ui.search
-
-import Cocktail
-import Cocktails
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Cocktail
+import com.example.cocktails_app.core.model.Cocktails
 import com.example.cocktails_app.core.model.Ingredient
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import com.example.cocktails_app.ui.ingredients.IngredientsAdapter
@@ -90,9 +89,9 @@ class SearchFragment : Fragment() {
                         recyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
 
-                        adapter.onItemClick = { selectedCocktail : Cocktail ->
+                        adapter.onItemClick = { selectedCocktail: Cocktail ->
                             val intent = Intent(context, RecipeDetails::class.java)
-                            intent.putExtra("recipe", selectedCocktail)
+                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId) // Pass the cocktail ID
                             startActivity(intent)
                         }
                     }
