@@ -32,7 +32,7 @@ class RecipeDetails : AppCompatActivity() {
 
     private fun fetchCocktailDetails(cocktailId: Int) {
         val request = Request.Builder()
-            .url("http://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$cocktailId")
+            .url("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$cocktailId")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -67,8 +67,8 @@ class RecipeDetails : AppCompatActivity() {
             Picasso.get().load(it.cocktailImage).into(binding.imageView2)
             binding.textView.text = it.cocktailName
             binding.instruction.text = it.cocktailInstructions
-            binding.category.text = "Category: ${it.category}"
-            binding.glass.text = "Served in: ${it.glass}"
+            binding.category.text = it.category
+            binding.glass.text = it.glass
 
             // Set up ingredients RecyclerView
             val ingredientsAdapter = IngredientsAdapter(it.getFormattedIngredients())
