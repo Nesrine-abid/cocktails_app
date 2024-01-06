@@ -5,12 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Category
 import com.example.cocktails_app.core.model.Ingredient
-import com.example.cocktails_app.ui.categories.CategoriesAdapter
 import com.google.gson.Gson
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -51,9 +49,12 @@ class IngredientsFragment : Fragment() {
                 }
             }
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val layoutManager = LinearLayoutManager(context)
+
+        // Use GridLayoutManager for a grid of items with 2 columns
+        val layoutManager = GridLayoutManager(context, 2)
 
         recyclerView = view.findViewById(R.id.recyclerViewSearch1)
         recyclerView.layoutManager = layoutManager

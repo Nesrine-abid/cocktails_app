@@ -67,10 +67,9 @@ class SearchFragment : Fragment() {
 
         val client = OkHttpClient()
         val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Cocktail")
+            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Shake")
             .build()
 
-        // Use enqueue for asynchronous network calls
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: okhttp3.Call, e: IOException) {
                 // Handle failure

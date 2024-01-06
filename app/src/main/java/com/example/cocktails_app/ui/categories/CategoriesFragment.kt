@@ -1,5 +1,6 @@
 package com.example.cocktails_app.ui.categories
 
+import androidx.recyclerview.widget.GridLayoutManager
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,10 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Category
+import com.example.cocktails_app.core.model.Drink
 import com.google.gson.Gson
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -21,7 +22,6 @@ import java.io.IOException
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
-
 
 class CategoriesFragment : Fragment() {
 
@@ -44,7 +44,6 @@ class CategoriesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_categories, container, false)
     }
 
@@ -58,18 +57,17 @@ class CategoriesFragment : Fragment() {
                 }
             }
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val layoutManager = LinearLayoutManager(context)
+
+        // Use GridLayoutManager for a grid of items
+        val layoutManager = GridLayoutManager(context, 2) // 2 is the span count for 2 columns
         loaderImageView = view.findViewById(R.id.ivLoader)
 
-        // Initialize your RecyclerView here
         recyclerView = view.findViewById(R.id.recyclerViewSearch2)
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
-        // Initialize your adapter with an empty list
-        adapter = CategoriesAdapter(emptyList())
-        recyclerView.adapter = adapter
 
         showLoader()
 
@@ -91,17 +89,22 @@ class CategoriesFragment : Fragment() {
                     val categories = gson.fromJson(responseData, Category::class.java)
 
                     activity?.runOnUiThread {
-
                         adapter = CategoriesAdapter(categories.drinks)
                         recyclerView.adapter = adapter
-                        // Notify your adapter that the data has changed
                         adapter.notifyDataSetChanged()
                         hideLoader()
+
+                        adapter.onItemClick = { selectedCategory: Drink ->
+                            val intent = Intent(context, SelectedCocktail::class.java)
+                            intent.putExtra("CATEGORY", selectedCategory.categoryName)
+                            startActivity(intent)
+                        }
                     }
                 }
             }
         })
     }
+
     private fun showLoader() {
         activity?.runOnUiThread {
             loaderImageView.visibility = View.VISIBLE
@@ -117,7 +120,7 @@ class CategoriesFragment : Fragment() {
                 loaderImageView.clearAnimation()
                 loaderImageView.visibility = View.GONE
             }
-        }, 1500) // Delay in
-        Log.d("CategoriesFragment", "hiding loader")// milliseconds
+        }, 700) // Delay in milliseconds
+        Log.d("CategoriesFragment", "Hiding loader")
     }
 }

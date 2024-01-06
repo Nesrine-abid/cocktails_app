@@ -26,7 +26,6 @@ data class Cocktail(
     @SerializedName("strIngredient6") val ingredient6: String?,
     @SerializedName("strIngredient7") val ingredient7: String?,
     @SerializedName("strIngredient8") val ingredient8: String?,
-    // ... include up to strIngredient8
 
     // Measures
     @SerializedName("strMeasure1") val measure1: String?,
@@ -38,12 +37,7 @@ data class Cocktail(
     @SerializedName("strMeasure7") val measure7: String?,
     @SerializedName("strMeasure8") val measure8: String?,
 
-
-    // ... include up to strMeasure8
-
 ) : Parcelable {
-
-    // Constructor for Parcelable
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readString() ?: "",
@@ -54,7 +48,6 @@ data class Cocktail(
         parcel.readString() ?: "",
 
         //ingredients
-
         parcel.readString() ,
         parcel.readString() ,
         parcel.readString(),
@@ -72,10 +65,8 @@ data class Cocktail(
         parcel.readString(),
         parcel.readString() ,
         parcel.readString() ,
-
     )
 
-    // Write object data to the parcel
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(cocktailId)
         parcel.writeString(cocktailName)
@@ -99,28 +90,19 @@ data class Cocktail(
         parcel.writeString(measure6)
         parcel.writeString(measure7)
         parcel.writeString(measure8)
-
-
     }
 
-    // Describe the kinds of special objects contained in this Parcelable instance
     override fun describeContents(): Int {
         return 0
     }
-
-    // Creator for Parcelable
     companion object CREATOR : Parcelable.Creator<Cocktail> {
-        // Create a new instance of the Parcelable class, instantiating it from the given parcel
         override fun createFromParcel(parcel: Parcel): Cocktail {
             return Cocktail(parcel)
         }
-
-        // Create a new array of the Parcelable class
         override fun newArray(size: Int): Array<Cocktail?> {
             return arrayOfNulls(size)
         }
     }
-
     // A function to extract the ingredients and their measures as a list of pairs
     fun getFormattedIngredients(): List<Drinks> {
         val formattedIngredients = mutableListOf<Drinks>()
@@ -134,7 +116,6 @@ data class Cocktail(
         if (!ingredient6.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient6: ${measure6 ?: ""}"))
         if (!ingredient7.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient7: ${measure7 ?: ""}"))
         if (!ingredient8.isNullOrBlank()) formattedIngredients.add(Drinks("$ingredient8: ${measure8 ?: ""}"))
-
         return formattedIngredients
     }
 }
