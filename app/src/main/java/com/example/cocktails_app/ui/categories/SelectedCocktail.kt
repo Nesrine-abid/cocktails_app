@@ -1,12 +1,14 @@
 package com.example.cocktails_app.ui.categories
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.core.model.Cocktails
-import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
+import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import com.example.cocktails_app.ui.search.CocktailAdapter
 import com.google.gson.Gson
 import okhttp3.Call
@@ -52,6 +54,12 @@ class SelectedCocktail : AppCompatActivity() {
                         val adapter = CocktailAdapter(selectedCocktails.drinks)
                         recyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
+
+                        adapter.onItemClick = { selectedCocktail: Cocktail ->
+                            val intent = Intent(this@SelectedCocktail, RecipeDetails::class.java)
+                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
+                            startActivity(intent)
+                        }
                     }
                 }
             }
