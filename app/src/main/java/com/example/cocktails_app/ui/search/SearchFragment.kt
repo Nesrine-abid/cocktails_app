@@ -90,7 +90,7 @@ class SearchFragment : Fragment() {
 
                         adapter.onItemClick = { selectedCocktail: Cocktail ->
                             val intent = Intent(context, RecipeDetails::class.java)
-                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId) // Pass the cocktail ID
+                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
                             startActivity(intent)
                         }
                     }

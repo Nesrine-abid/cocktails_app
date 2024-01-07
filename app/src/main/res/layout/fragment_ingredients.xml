@@ -13,4 +13,12 @@
         app:layoutManager="GridLayoutManager"
         app:spanCount="2"
         tools:listitem="@layout/category_item" />
+
+    <ImageView
+        android:id="@+id/ivLoader"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/loader"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 </FrameLayout>
