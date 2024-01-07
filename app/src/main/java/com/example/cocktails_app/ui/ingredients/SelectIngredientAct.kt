@@ -14,7 +14,7 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-class SelectedCocktail1 : AppCompatActivity() {
+class SelectIngredientAct : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

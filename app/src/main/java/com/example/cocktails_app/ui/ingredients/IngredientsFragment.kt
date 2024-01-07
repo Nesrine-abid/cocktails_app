@@ -1,6 +1,6 @@
 package com.example.cocktails_app.ui.ingredients
 
-import SelectedCocktail1
+import SelectIngredientAct
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -87,7 +87,7 @@ class IngredientsFragment : Fragment() {
                         // Notify your adapter that the data has changed
                         adapter.notifyDataSetChanged()
                         adapter.onItemClick = { selectedIngredient: Drinks ->
-                            val intent = Intent(context, SelectedCocktail1::class.java)
+                            val intent = Intent(context, SelectIngredientAct::class.java)
                             intent.putExtra("INGREDIENT", selectedIngredient.ingredientName)
                             Log.d("SelectedCocktail", "Received ingredientName: ${selectedIngredient.ingredientName}")
                             startActivity(intent)
