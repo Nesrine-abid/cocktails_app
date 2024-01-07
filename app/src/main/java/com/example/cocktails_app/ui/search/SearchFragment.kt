@@ -93,6 +93,20 @@ class SearchFragment : Fragment() {
                             intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
                             startActivity(intent)
                         }
+
+                        adapter.onItemCheckChanged = { isChecked, position ->
+                            val selectedCocktail = originalCocktails[position]
+
+                            if (isChecked) {
+                                showToast("Item added to Wishlist")
+                                // Add the selected cocktail to the favorites list
+                                // You can use a ViewModel, a Repository, or any preferred architecture for data handling
+                            } else {
+                                showToast("Item removed from Wishlist")
+                                // Remove the selected cocktail from the favorites list
+                            }
+                        }
+
                     }
                 }
             }
@@ -108,6 +122,10 @@ class SearchFragment : Fragment() {
                 return true
             }
         })
+    }
+
+    private fun showToast(str: String) {
+        Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
     }
 
     private fun filterList(query: String?) {
