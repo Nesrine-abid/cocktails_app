@@ -1,6 +1,9 @@
 package com.example.cocktails_app.ui.ingredients
 
+import SelectedCocktail1
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +11,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Drinks
 import com.example.cocktails_app.core.model.Ingredient
 import com.google.gson.Gson
 import okhttp3.Callback
@@ -82,6 +86,12 @@ class IngredientsFragment : Fragment() {
                         recyclerView.adapter = adapter
                         // Notify your adapter that the data has changed
                         adapter.notifyDataSetChanged()
+                        adapter.onItemClick = { selectedIngredient: Drinks ->
+                            val intent = Intent(context, SelectedCocktail1::class.java)
+                            intent.putExtra("INGREDIENT", selectedIngredient.ingredientName)
+                            Log.d("SelectedCocktail", "Received ingredientName: ${selectedIngredient.ingredientName}")
+                            startActivity(intent)
+                        }
                     }
                 }
             }
