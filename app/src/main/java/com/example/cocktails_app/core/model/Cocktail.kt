@@ -14,8 +14,7 @@ data class Cocktail(
     @SerializedName("strInstructions") val cocktailInstructions: String,
     @SerializedName("strCategory") val category: String?,
     @SerializedName("strGlass") val glass: String?,
-    @SerializedName("strAlcoholic") val alcoholic: String,
-
+    @SerializedName("strAlcoholic") val alcoholic: String?,
 
     // Ingredients
     @SerializedName("strIngredient1") val ingredient1: String?,
@@ -72,6 +71,9 @@ data class Cocktail(
         parcel.writeString(cocktailName)
         parcel.writeString(cocktailImage)
         parcel.writeString(cocktailInstructions)
+        parcel.writeString(category)
+        parcel.writeString(glass)
+        parcel.writeString(alcoholic)
 
         parcel.writeString(ingredient1)
         parcel.writeString(ingredient2)

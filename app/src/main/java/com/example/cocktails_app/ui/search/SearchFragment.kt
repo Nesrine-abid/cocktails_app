@@ -88,33 +88,10 @@ class SearchFragment : Fragment() {
                         recyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
 
-                        adapter.onItemClick = { selectedCocktail : Cocktail ->
-                            val client = OkHttpClient()
-                            val request = Request.Builder()
-                                .url("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${selectedCocktail.cocktailId}")
-                                .build()
-
-                            client.newCall(request).enqueue(object : Callback {
-                                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                                    // Handle failure
-                                }
-
-                                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                                    response.body?.let {
-                                        val responseData = it.string()
-                                        val gson = Gson()
-                                        val cocktailDetails = gson.fromJson(responseData, Cocktails::class.java)
-
-                                        val originalCocktail = cocktailDetails.drinks.firstOrNull()
-
-                                        if (originalCocktail != null) {
-                                            val intent = Intent(context, RecipeDetails::class.java)
-                                            intent.putExtra("recipe", originalCocktail)
-                                            startActivity(intent)
-                                        }
-                                    }
-                                }
-                            })
+                        adapter.onItemClick = { selectedCocktail: Cocktail ->
+                            val intent = Intent(context, RecipeDetails::class.java)
+                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId) // Pass the cocktail ID
+                            startActivity(intent)
                         }
                     }
                 }
@@ -136,22 +113,40 @@ class SearchFragment : Fragment() {
     private fun filterList(query: String?) {
         if (!query.isNullOrBlank()) {
             val filteredList = ArrayList<Cocktail>()
-            for (cocktail in originalCocktails) {
-                if (cocktail.cocktailName.lowercase(Locale.ROOT).contains(query.lowercase(Locale.ROOT))) {
-                    filteredList.add(cocktail)
-                }
-            }
 
-            if (filteredList.isEmpty()) {
-                Toast.makeText(context, "No Data found", Toast.LENGTH_SHORT).show()
-            } else {
-                val adapter = recyclerView.adapter as? CocktailAdapter
-                adapter?.setFilteredList(filteredList)
-            }
+            val baseUrl = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s="
+            val apiUrl = "$baseUrl$query"
+
+            val client = OkHttpClient()
+            val request = Request.Builder()
+                .url(apiUrl)
+                .build()
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                    // Handle failure
+                }
+
+                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                    response.body?.let {
+                        val responseData = it.string()
+                        val gson = Gson()
+                        val cocktails = gson.fromJson(responseData, Cocktails::class.java)
+
+                        cocktails.drinks?.let { filteredList.addAll(it) }
+
+                        activity?.runOnUiThread {
+                            val adapter = recyclerView.adapter as? CocktailAdapter
+                            adapter?.setFilteredList(filteredList)
+                        }
+                    }
+                }
+            })
         } else {
             val adapter = recyclerView.adapter as? CocktailAdapter
             adapter?.setFilteredList(originalCocktails)
         }
     }
+
 }
 
