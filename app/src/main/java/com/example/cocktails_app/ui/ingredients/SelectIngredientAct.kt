@@ -1,3 +1,5 @@
+package com.example.cocktails_app.ui.ingredients
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -7,23 +9,17 @@ import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktails
 import com.example.cocktails_app.ui.search.CocktailAdapter
 import com.google.gson.Gson
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import java.io.IOException
 
 class SelectIngredientAct : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_selected_cocktail)
-
+        setContentView(R.layout.activity_select_ingredient1)
         recyclerView = findViewById(R.id.recyclerViewSearch3) // Initialize recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.setHasFixedSize(true)
-
         // Retrieve the "INGREDIENT" extra correctly
         val ingredientName = intent.getStringExtra("INGREDIENT")
         supportActionBar?.title = ingredientName
