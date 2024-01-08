@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.core.model.Cocktails
+import com.example.cocktails_app.core.service.CocktailsByCategoryFetcher
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -20,6 +21,7 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -70,52 +72,13 @@ class SearchFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
 
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Shake")
-            .build()
+        val categories = listOf(
+            "Ordinary Drink", "Cocktail", "Shake", "Other / Unknown", "Cocoa",
+            "Shot", "Coffee / Tea", "Homemade Liqueur", "Punch / Party Drink", "Beer", "Soft Drink"
+        )
+        val randomCategory = categories[Random.nextInt(categories.size)]
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                // Handle failure
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                response.body?.let {
-                    val responseData = it.string()
-                    val gson = Gson()
-                    val cocktails = gson.fromJson(responseData, Cocktails::class.java)
-
-                    ShakeCocktails = cocktails.drinks
-
-                    activity?.runOnUiThread {
-                        val adapter = CocktailAdapter(ShakeCocktails)
-                        recyclerView.adapter = adapter
-                        adapter.notifyDataSetChanged()
-
-                        adapter.onItemClick = { selectedCocktail: Cocktail ->
-                            val intent = Intent(context, RecipeDetails::class.java)
-
-                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
-                            startActivity(intent)
-                        }
-
-                        adapter.onItemCheckChanged = { isChecked, position ->
-                            val selectedCocktail = ShakeCocktails[position]
-
-                            if (isChecked) {
-                                showToast("Item added to Wishlist")
-                                saveCheckedItem(selectedCocktail.cocktailId, true)
-
-                            } else {
-                                showToast("Item removed from Wishlist")
-                                saveCheckedItem(selectedCocktail.cocktailId, false)
-                            }
-                        }
-                    }
-                }
-            }
-        })
+        fetchCocktailsByCategory(randomCategory)
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -127,6 +90,38 @@ class SearchFragment : Fragment() {
                 return true
             }
         })
+    }
+    private fun fetchCocktailsByCategory(categoryName: String?) {
+        CocktailsByCategoryFetcher.fetchCocktailsByCategory(categoryName) { cocktails ->
+            activity?.runOnUiThread {
+                val adapter = cocktails?.let { CocktailAdapter(cocktails.drinks) }
+                if (cocktails != null) {
+                    ShakeCocktails = cocktails.drinks
+                }
+
+                recyclerView.adapter = adapter
+                adapter?.notifyDataSetChanged()
+
+                adapter?.onItemClick = { selectedCocktail: Cocktail ->
+                    val intent = Intent(context, RecipeDetails::class.java)
+                    intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
+                    startActivity(intent)
+                }
+
+                adapter?.onItemCheckChanged = { isChecked, position ->
+                    val selectedCocktail = ShakeCocktails[position]
+
+                    if (isChecked) {
+                        showToast("Item added to Wishlist")
+                        saveCheckedItem(selectedCocktail.cocktailId, true)
+
+                    } else {
+                        showToast("Item removed from Wishlist")
+                        saveCheckedItem(selectedCocktail.cocktailId, false)
+                    }
+                }
+            }
+        }
     }
 
     private fun showToast(str: String) {
