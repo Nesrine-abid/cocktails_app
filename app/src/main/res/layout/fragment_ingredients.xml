@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.ingredients.IngredientsFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewSearch1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="GridLayoutManager"
+        app:spanCount="2"
+        tools:listitem="@layout/category_item" />
+
+    <ImageView
+        android:id="@+id/ivLoader"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/loader"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</FrameLayout>
