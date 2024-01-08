@@ -31,8 +31,6 @@ class CocktailDetailsAdapter(private val cocktails: List<Cocktail>) :
         Picasso.get().load(cocktail.cocktailImage).into(holder.image)
         holder.cocktailName.text = cocktail.cocktailName
         holder.instructions.text = cocktail.cocktailInstructions
-
-        // Assuming getFormattedIngredients() is implemented in the Cocktail class
         holder.ingredientsTitle.text = cocktail.getFormattedIngredients().joinToString("\n")
     }
 

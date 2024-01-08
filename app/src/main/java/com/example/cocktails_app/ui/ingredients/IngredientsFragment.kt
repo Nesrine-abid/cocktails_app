@@ -12,8 +12,13 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
+import com.example.cocktails_app.core.model.Drink
 import com.example.cocktails_app.core.model.Drinks
 import com.example.cocktails_app.core.model.Ingredient
+import com.example.cocktails_app.core.service.CategoriesFetcher
+import com.example.cocktails_app.core.service.IngredientsFetcher
+import com.example.cocktails_app.ui.categories.CategoriesAdapter
+import com.example.cocktails_app.ui.categories.SelectedCocktail
 import com.google.gson.Gson
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -28,6 +33,7 @@ class IngredientsFragment : Fragment() {
     private var param2: String? = null
 
     private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: IngredientsAdapter
     private lateinit var loaderImageView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +66,6 @@ class IngredientsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use GridLayoutManager for a grid of items with 2 columns
         val layoutManager = GridLayoutManager(context, 2)
         loaderImageView = view.findViewById(R.id.ivLoader)
 
@@ -69,42 +74,25 @@ class IngredientsFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         showLoader()
+        fetchIngredients()
+    }
 
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/list.php?i=list")
-            .build()
-
-        // Use enqueue for asynchronous network calls
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                // Handle failure
+    private fun fetchIngredients() {
+        IngredientsFetcher.fetchIngredients() { ingredients ->
+            activity?.runOnUiThread {
+                adapter = ingredients?.let { IngredientsAdapter(ingredients.drinks) }!!
+                recyclerView.adapter = adapter
+                adapter.notifyDataSetChanged()
                 hideLoader()
-            }
 
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                response.body?.let {
-                    val responseData = it.string()
-                    val gson = Gson()
-                    val ingredients = gson.fromJson(responseData, Ingredient::class.java)
-
-                    activity?.runOnUiThread {
-                        val adapter = IngredientsAdapter(ingredients.drinks)
-                        recyclerView.adapter = adapter
-                        // Notify your adapter that the data has changed
-                        adapter.notifyDataSetChanged()
-                        hideLoader()
-
-                        adapter.onItemClick = { selectedIngredient: Drinks ->
-                            val intent = Intent(context, SelectIngredientAct::class.java)
-                            intent.putExtra("INGREDIENT", selectedIngredient.ingredientName)
-                            Log.d("SelectedCocktail", "Received ingredientName: ${selectedIngredient.ingredientName}")
-                            startActivity(intent)
-                        }
-                    }
+                adapter.onItemClick = { selectedIngredient: Drinks ->
+                    val intent = Intent(context, SelectIngredientAct::class.java)
+                    intent.putExtra("INGREDIENT", selectedIngredient.ingredientName)
+                    Log.d("SelectedCocktail", "Received ingredientName: ${selectedIngredient.ingredientName}")
+                    startActivity(intent)
                 }
             }
-        })
+        }
     }
     private fun showLoader() {
         activity?.runOnUiThread {
