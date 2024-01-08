@@ -1,4 +1,5 @@
 package com.example.cocktails_app.ui.search
+import FavoriteFragment
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -12,16 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
-import com.example.cocktails_app.core.model.Cocktails
 import com.example.cocktails_app.core.service.CocktailsByCategoryFetcher
 import com.example.cocktails_app.core.service.SearchByNameFetcher
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
 import kotlin.random.Random
 
 private const val ARG_PARAM1 = "param1"
@@ -29,12 +25,13 @@ private const val ARG_PARAM2 = "param2"
 
 private const val SharedPreferencesKey = "mySharedPreferences"
 private const val SavedValueKey = "savedCheckedItems"
+private const val FAVORITE_FRAGMENT_TAG = "FavoriteFragment"
 class SearchFragment : Fragment() {
 
     private var param1: String? = null
     private var param2: String? = null
 
-    private var ShakeCocktails: List<Cocktail> = emptyList()
+    private var RandomCocktails: List<Cocktail> = emptyList()
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
 
@@ -81,19 +78,49 @@ class SearchFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 filterList(newText)
                 return true
             }
         })
     }
+
+    private fun saveCheckedItem(cocktailId: Int, isChecked: Boolean) {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+
+        checkedItemsJson?.let {
+            val checkedItems = Gson().fromJson<MutableList<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+                .toMutableList()
+
+            val index = checkedItems.indexOfFirst { it.first == cocktailId }
+            if (index != -1) {
+                checkedItems[index] = Pair(cocktailId, isChecked)
+            } else {
+                checkedItems.add(Pair(cocktailId, isChecked))
+            }
+
+            sharedPreferences.edit().apply {
+                putString(SavedValueKey, Gson().toJson(checkedItems))
+                apply()
+            }
+        }
+    }
+    private fun loadCheckedItems(): List<Pair<Int, Boolean>> {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+
+        return checkedItemsJson?.let {
+            Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+        } ?: emptyList()
+    }
+
     private fun fetchCocktailsByCategory(categoryName: String?) {
         CocktailsByCategoryFetcher.fetchCocktailsByCategory(categoryName) { cocktails ->
             activity?.runOnUiThread {
                 val adapter = cocktails?.let { CocktailAdapter(cocktails.drinks) }
                 if (cocktails != null) {
-                    ShakeCocktails = cocktails.drinks
+                    RandomCocktails = cocktails.drinks
                 }
 
                 recyclerView.adapter = adapter
@@ -106,16 +133,20 @@ class SearchFragment : Fragment() {
                 }
 
                 adapter?.onItemCheckChanged = { isChecked, position ->
-                    val selectedCocktail = ShakeCocktails[position]
+                    val selectedCocktail = RandomCocktails[position]
 
                     if (isChecked) {
-                        showToast("Item added to Wishlist")
+                        showToast("Item added to Favorites")
                         saveCheckedItem(selectedCocktail.cocktailId, true)
 
                     } else {
-                        showToast("Item removed from Wishlist")
+                        showToast("Item removed from Favorites")
                         saveCheckedItem(selectedCocktail.cocktailId, false)
                     }
+
+                    // Notify the FavoriteFragment about the change
+                    val favoriteFragment = fragmentManager?.findFragmentByTag(FAVORITE_FRAGMENT_TAG) as? FavoriteFragment
+                    favoriteFragment?.updateFavoriteList()
                 }
             }
         }
@@ -124,46 +155,12 @@ class SearchFragment : Fragment() {
     private fun showToast(str: String) {
         Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
     }
-
-    private fun saveCheckedItem(cocktailId: Int, isChecked: Boolean) {
-        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
-        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
-
-        checkedItemsJson?.let {
-            val checkedItems = Gson().fromJson<MutableList<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
-                .toMutableList()
-
-            // Update the list with the new checked status
-            val index = checkedItems.indexOfFirst { it.first == cocktailId }
-            if (index != -1) {
-                checkedItems[index] = Pair(cocktailId, isChecked)
-            } else {
-                checkedItems.add(Pair(cocktailId, isChecked))
-            }
-
-            // Save the updated list
-            sharedPreferences.edit().apply {
-                putString(SavedValueKey, Gson().toJson(checkedItems))
-                apply()
-            }
-        }
-    }
-
-    private fun loadCheckedItems(): List<Pair<Int, Boolean>> {
-        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
-        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
-
-        return checkedItemsJson?.let {
-            Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
-        } ?: emptyList()
-    }
-
     private fun filterList(query: String?) {
         if (!query.isNullOrBlank()) {
             fetchCocktailsByQuery(query)
         } else {
             val adapter = recyclerView.adapter as? CocktailAdapter
-            adapter?.setFilteredList(ShakeCocktails)
+            adapter?.setFilteredList(RandomCocktails)
         }
     }
     private fun fetchCocktailsByQuery(query: String) {
@@ -180,7 +177,5 @@ class SearchFragment : Fragment() {
             }
         }
     }
-
-
 }
 

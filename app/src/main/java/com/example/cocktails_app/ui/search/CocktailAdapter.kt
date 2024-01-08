@@ -39,10 +39,6 @@ class CocktailAdapter(private var cocktails: List<Cocktail>) :
             onItemClick?.invoke(currentItem)
         }
 
-        // Set the initial checked status for the CheckBox
-        holder.checkBox.isChecked = isFavorite(position)
-
-        // Set an OnCheckedChangeListener for the CheckBox
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             onItemCheckChanged?.invoke(isChecked, position)
         }
@@ -53,11 +49,6 @@ class CocktailAdapter(private var cocktails: List<Cocktail>) :
     fun setFilteredList(filteredList: List<Cocktail>) {
         this.cocktails = filteredList
         notifyDataSetChanged()
-    }
-    private fun isFavorite(position: Int): Boolean {
-        // Implement logic to check if the cocktail at the given position is in the favorites list
-        // Return true if it is a favorite, false otherwise
-        return false
     }
 }
 

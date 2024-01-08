@@ -12,6 +12,13 @@ import com.example.cocktails_app.core.service.CocktailDetailsFetcher
 import com.example.cocktails_app.ui.favorites.FavoritesAdapter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -24,6 +31,7 @@ class FavoriteFragment : Fragment() {
     private var param2: String? = null
 
     private lateinit var recyclerView: RecyclerView
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,31 +66,37 @@ class FavoriteFragment : Fragment() {
         loadFavoriteCocktails()
     }
 
+
     private fun loadFavoriteCocktails() {
-        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
-        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+        coroutineScope.launch {
+            val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+            val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
 
-        checkedItemsJson?.let {
-            val checkedItems = Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+            checkedItemsJson?.let {
+                val checkedItems = Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
 
-            val favorites = checkedItems
-                .filter { it.second }
-                .map { it.first }
+                val favorites = checkedItems
+                    .filter { it.second }
+                    .map { it.first }
 
-            val loadedCocktails = mutableListOf<Cocktail>()
+                val loadedCocktails = mutableListOf<Cocktail>()
 
-            favorites.forEach { favoriteId ->
-                CocktailDetailsFetcher.fetchCocktailDetails(favoriteId) { cocktail ->
-                    cocktail?.let {
-                        loadedCocktails.add(it)
-
-                        if (loadedCocktails.size == favorites.size) {
-                            val adapter = FavoritesAdapter(loadedCocktails)
-                            recyclerView.adapter = adapter
-                        }
+                val deferredCocktails = favorites.map { favoriteId ->
+                    async {
+                        CocktailDetailsFetcher.fetchCocktailDetails(favoriteId)
                     }
                 }
+
+                loadedCocktails.addAll(deferredCocktails.awaitAll().filterNotNull())
+
+                val adapter = FavoritesAdapter(loadedCocktails, checkedItems)
+                recyclerView.adapter = adapter
             }
         }
+    }
+
+
+    fun updateFavoriteList() {
+        loadFavoriteCocktails()
     }
 }

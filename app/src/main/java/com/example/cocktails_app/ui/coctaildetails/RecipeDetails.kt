@@ -8,9 +8,14 @@ import com.example.cocktails_app.core.service.CocktailDetailsFetcher
 import com.example.cocktails_app.databinding.ActivityRecipeDetailsBinding
 import com.example.cocktails_app.ui.ingredients.IngredientsAdapter
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RecipeDetails : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeDetailsBinding
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,25 +33,37 @@ class RecipeDetails : AppCompatActivity() {
     }
 
     private fun fetchCocktailDetails(cocktailId: Int) {
-        CocktailDetailsFetcher.fetchCocktailDetails(cocktailId) { cocktail ->
-            runOnUiThread {
+        coroutineScope.launch {
+            try {
+                val cocktail = withContext(Dispatchers.IO) {
+                    CocktailDetailsFetcher.fetchCocktailDetails(cocktailId)
+                }
                 updateUI(cocktail)
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@RecipeDetails, "Error fetching cocktail details", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
-    private fun updateUI(cocktail: Cocktail?) {
-        cocktail?.let {
-            Picasso.get().load(it.cocktailImage).into(binding.imageView2)
-            binding.textView.text = it.cocktailName
-            binding.instruction.text = it.cocktailInstructions
-            binding.category.text = it.category
-            binding.glass.text = it.glass
+private fun updateUI(cocktail: Cocktail?) {
+    coroutineScope.launch {
+        withContext(Dispatchers.Main) {
+            cocktail?.let {
+                Picasso.get().load(it.cocktailImage).into(binding.imageView2)
+                binding.textView.text = it.cocktailName
+                binding.instruction.text = it.cocktailInstructions
+                binding.category.text = it.category
+                binding.glass.text = it.glass
 
-            val ingredientsAdapter = IngredientsAdapter(it.getFormattedIngredients())
-            binding.recyclerViewIngredients.adapter = ingredientsAdapter
-        } ?: runOnUiThread {
-            Toast.makeText(this, "Cocktail details not found", Toast.LENGTH_SHORT).show()
-            finish()
+                val ingredientsAdapter = IngredientsAdapter(it.getFormattedIngredients())
+                binding.recyclerViewIngredients.adapter = ingredientsAdapter
+            } ?: run {
+                Toast.makeText(this@RecipeDetails, "Cocktail details not found", Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
     }
+}
+
 }
