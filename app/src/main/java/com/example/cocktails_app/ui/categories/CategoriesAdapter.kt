@@ -9,7 +9,6 @@ import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Category
 import com.example.cocktails_app.core.model.Drink
 
-
 class DataViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     val drinks : TextView = itemView.findViewById(R.id.categoryName)
 }
@@ -31,7 +30,6 @@ class CategoriesAdapter (private var categories: List<Drink>) :
         holder.itemView.setOnClickListener{
             onItemClick?.invoke(currentItem)
         }
-
     }
     override fun getItemCount(): Int {
         return categories.size

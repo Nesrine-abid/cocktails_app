@@ -1,4 +1,5 @@
 package com.example.cocktails_app.ui.search
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,29 +13,33 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.core.model.Cocktails
-import com.example.cocktails_app.core.model.Ingredient
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
-import com.example.cocktails_app.ui.ingredients.IngredientsAdapter
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
-import java.util.Locale
+
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+private const val SharedPreferencesKey = "mySharedPreferences"
+private const val SavedValueKey = "savedCheckedItems"
 class SearchFragment : Fragment() {
 
     private var param1: String? = null
     private var param2: String? = null
 
-    private var originalCocktails: List<Cocktail> = emptyList()
+    private var ShakeCocktails: List<Cocktail> = emptyList()
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadCheckedItems()
+
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -81,32 +86,32 @@ class SearchFragment : Fragment() {
                     val gson = Gson()
                     val cocktails = gson.fromJson(responseData, Cocktails::class.java)
 
-                    originalCocktails = cocktails.drinks
+                    ShakeCocktails = cocktails.drinks
 
                     activity?.runOnUiThread {
-                        val adapter = CocktailAdapter(originalCocktails)
+                        val adapter = CocktailAdapter(ShakeCocktails)
                         recyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
 
                         adapter.onItemClick = { selectedCocktail: Cocktail ->
                             val intent = Intent(context, RecipeDetails::class.java)
+
                             intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
                             startActivity(intent)
                         }
 
                         adapter.onItemCheckChanged = { isChecked, position ->
-                            val selectedCocktail = originalCocktails[position]
+                            val selectedCocktail = ShakeCocktails[position]
 
                             if (isChecked) {
                                 showToast("Item added to Wishlist")
-                                // Add the selected cocktail to the favorites list
-                                // You can use a ViewModel, a Repository, or any preferred architecture for data handling
+                                saveCheckedItem(selectedCocktail.cocktailId, true)
+
                             } else {
                                 showToast("Item removed from Wishlist")
-                                // Remove the selected cocktail from the favorites list
+                                saveCheckedItem(selectedCocktail.cocktailId, false)
                             }
                         }
-
                     }
                 }
             }
@@ -127,6 +132,40 @@ class SearchFragment : Fragment() {
     private fun showToast(str: String) {
         Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
     }
+
+    private fun saveCheckedItem(cocktailId: Int, isChecked: Boolean) {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+
+        checkedItemsJson?.let {
+            val checkedItems = Gson().fromJson<MutableList<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+                .toMutableList()
+
+            // Update the list with the new checked status
+            val index = checkedItems.indexOfFirst { it.first == cocktailId }
+            if (index != -1) {
+                checkedItems[index] = Pair(cocktailId, isChecked)
+            } else {
+                checkedItems.add(Pair(cocktailId, isChecked))
+            }
+
+            // Save the updated list
+            sharedPreferences.edit().apply {
+                putString(SavedValueKey, Gson().toJson(checkedItems))
+                apply()
+            }
+        }
+    }
+
+    private fun loadCheckedItems(): List<Pair<Int, Boolean>> {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+
+        return checkedItemsJson?.let {
+            Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+        } ?: emptyList()
+    }
+
 
     private fun filterList(query: String?) {
         if (!query.isNullOrBlank()) {
@@ -162,7 +201,7 @@ class SearchFragment : Fragment() {
             })
         } else {
             val adapter = recyclerView.adapter as? CocktailAdapter
-            adapter?.setFilteredList(originalCocktails)
+            adapter?.setFilteredList(ShakeCocktails)
         }
     }
 

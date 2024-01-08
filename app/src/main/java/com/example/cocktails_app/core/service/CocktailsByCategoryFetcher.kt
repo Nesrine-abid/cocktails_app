@@ -1,6 +1,6 @@
 package com.example.cocktails_app.core.service
 
-import com.example.cocktails_app.core.model.Category
+import com.example.cocktails_app.core.model.Cocktails
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
@@ -9,13 +9,13 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-object CategoriesFetcher {
+object CocktailsByCategoryFetcher {
 
     private val client = OkHttpClient()
 
-    fun fetchCategories(callback: (Category?) -> Unit) {
+    fun fetchCocktailsByCategory(categoryName: String?, callback: (Cocktails?) -> Unit) {
         val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list")
+            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=$categoryName")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -27,17 +27,17 @@ object CategoriesFetcher {
                 response.body?.let { responseBody ->
                     val responseData = responseBody.string()
 
-                    val cocktail = parseCategoryDetails(responseData)
-                    callback(cocktail)
+                    val cocktails = parseCocktailDetails(responseData)
+                    callback(cocktails)
                 } ?: callback(null)
             }
         })
     }
 
-    private fun parseCategoryDetails(json: String): Category? {
+    private fun parseCocktailDetails(json: String): Cocktails? {
         val gson = Gson()
-        val categories = gson.fromJson(json, Category::class.java)
-        return categories
+        return gson.fromJson(json, Cocktails::class.java)
     }
 
 }
+

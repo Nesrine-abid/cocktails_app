@@ -1,6 +1,6 @@
 package com.example.cocktails_app.core.service
 
-import com.example.cocktails_app.core.model.Category
+import com.example.cocktails_app.core.model.Cocktail
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
@@ -9,13 +9,13 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 
-object CategoriesFetcher {
+object CocktailDetailsFetcher {
 
     private val client = OkHttpClient()
 
-    fun fetchCategories(callback: (Category?) -> Unit) {
+    fun fetchCocktailDetails(cocktailId: Int, callback: (Cocktail?) -> Unit) {
         val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list")
+            .url("https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=$cocktailId")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -26,18 +26,19 @@ object CategoriesFetcher {
             override fun onResponse(call: Call, response: Response) {
                 response.body?.let { responseBody ->
                     val responseData = responseBody.string()
-
-                    val cocktail = parseCategoryDetails(responseData)
+                    val cocktail = parseCocktailDetails(responseData)
                     callback(cocktail)
                 } ?: callback(null)
             }
         })
     }
 
-    private fun parseCategoryDetails(json: String): Category? {
+    private fun parseCocktailDetails(json: String): Cocktail? {
         val gson = Gson()
-        val categories = gson.fromJson(json, Category::class.java)
-        return categories
+        val response = gson.fromJson(json, CocktailApiResponse::class.java)
+        return response.drinks?.firstOrNull()
     }
 
+    data class CocktailApiResponse(val drinks: List<Cocktail>?)
 }
+
