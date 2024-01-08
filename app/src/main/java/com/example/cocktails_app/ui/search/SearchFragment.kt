@@ -14,6 +14,7 @@ import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
 import com.example.cocktails_app.core.model.Cocktails
 import com.example.cocktails_app.core.service.CocktailsByCategoryFetcher
+import com.example.cocktails_app.core.service.SearchByNameFetcher
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -72,12 +73,8 @@ class SearchFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
 
-        val categories = listOf(
-            "Ordinary Drink", "Cocktail", "Shake", "Other / Unknown", "Cocoa",
-            "Shot", "Coffee / Tea", "Homemade Liqueur", "Punch / Party Drink", "Beer", "Soft Drink"
-        )
+        val categories = listOf("Ordinary Drink", "Cocktail", "Shake", "Other / Unknown", "Cocoa", "Shot", "Coffee / Tea", "Homemade Liqueur", "Punch / Party Drink", "Beer", "Soft Drink")
         val randomCategory = categories[Random.nextInt(categories.size)]
-
         fetchCocktailsByCategory(randomCategory)
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -161,44 +158,29 @@ class SearchFragment : Fragment() {
         } ?: emptyList()
     }
 
-
     private fun filterList(query: String?) {
         if (!query.isNullOrBlank()) {
-            val filteredList = ArrayList<Cocktail>()
-
-            val baseUrl = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s="
-            val apiUrl = "$baseUrl$query"
-
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .url(apiUrl)
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    // Handle failure
-                }
-
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    response.body?.let {
-                        val responseData = it.string()
-                        val gson = Gson()
-                        val cocktails = gson.fromJson(responseData, Cocktails::class.java)
-
-                        cocktails.drinks?.let { filteredList.addAll(it) }
-
-                        activity?.runOnUiThread {
-                            val adapter = recyclerView.adapter as? CocktailAdapter
-                            adapter?.setFilteredList(filteredList)
-                        }
-                    }
-                }
-            })
+            fetchCocktailsByQuery(query)
         } else {
             val adapter = recyclerView.adapter as? CocktailAdapter
             adapter?.setFilteredList(ShakeCocktails)
         }
     }
+    private fun fetchCocktailsByQuery(query: String) {
+        val filteredList = ArrayList<Cocktail>()
+
+        SearchByNameFetcher.fetchCocktailsByName(query) { cocktails ->
+            cocktails?.let {
+                filteredList.addAll(it.drinks ?: emptyList())
+
+                activity?.runOnUiThread {
+                    val adapter = recyclerView.adapter as? CocktailAdapter
+                    adapter?.setFilteredList(filteredList)
+                }
+            }
+        }
+    }
+
 
 }
 
