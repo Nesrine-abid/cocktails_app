@@ -12,13 +12,8 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
-import com.example.cocktails_app.core.model.Category
 import com.example.cocktails_app.core.model.Drink
-import com.google.gson.Gson
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
+import com.example.cocktails_app.core.service.CategoriesFetcher
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -61,8 +56,7 @@ class CategoriesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Use GridLayoutManager for a grid of items
-        val layoutManager = GridLayoutManager(context, 2) // 2 is the span count for 2 columns
+        val layoutManager = GridLayoutManager(context, 2)
         loaderImageView = view.findViewById(R.id.ivLoader)
 
         recyclerView = view.findViewById(R.id.recyclerViewSearch2)
@@ -70,41 +64,25 @@ class CategoriesFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         showLoader()
-
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list")
-            .build()
-
-        // Use enqueue for asynchronous network calls
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                // Handle failure
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                response.body?.let {
-                    val responseData = it.string()
-                    val gson = Gson()
-                    val categories = gson.fromJson(responseData, Category::class.java)
-
-                    activity?.runOnUiThread {
-                        adapter = CategoriesAdapter(categories.drinks)
-                        recyclerView.adapter = adapter
-                        adapter.notifyDataSetChanged()
-                        hideLoader()
-
-                        adapter.onItemClick = { selectedCategory: Drink ->
-                            val intent = Intent(context, SelectedCocktail::class.java)
-                            intent.putExtra("CATEGORY", selectedCategory.categoryName)
-                            startActivity(intent)
-                        }
-                    }
-                }
-            }
-        })
+        fetchCategories()
     }
 
+    private fun fetchCategories() {
+        CategoriesFetcher.fetchCategories() { categories ->
+            activity?.runOnUiThread {
+                adapter = categories?.let { CategoriesAdapter(categories.drinks) }!!
+                recyclerView.adapter = adapter
+                adapter.notifyDataSetChanged()
+                hideLoader()
+
+                adapter.onItemClick = { selectedCategory: Drink ->
+                    val intent = Intent(context, SelectedCocktail::class.java)
+                    intent.putExtra("CATEGORY", selectedCategory.categoryName)
+                    startActivity(intent)
+                }
+            }
+        }
+    }
     private fun showLoader() {
         activity?.runOnUiThread {
             loaderImageView.visibility = View.VISIBLE

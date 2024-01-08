@@ -1,4 +1,6 @@
 package com.example.cocktails_app.ui.search
+import FavoriteFragment
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,30 +13,33 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
 import com.example.cocktails_app.core.model.Cocktail
-import com.example.cocktails_app.core.model.Cocktails
-import com.example.cocktails_app.core.model.Ingredient
+import com.example.cocktails_app.core.service.CocktailsByCategoryFetcher
+import com.example.cocktails_app.core.service.SearchByNameFetcher
 import com.example.cocktails_app.ui.coctaildetails.RecipeDetails
-import com.example.cocktails_app.ui.ingredients.IngredientsAdapter
 import com.google.gson.Gson
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
-import java.util.Locale
+import com.google.gson.reflect.TypeToken
+import kotlin.random.Random
+
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+private const val SharedPreferencesKey = "mySharedPreferences"
+private const val SavedValueKey = "savedCheckedItems"
+private const val FAVORITE_FRAGMENT_TAG = "FavoriteFragment"
 class SearchFragment : Fragment() {
 
     private var param1: String? = null
     private var param2: String? = null
 
-    private var originalCocktails: List<Cocktail> = emptyList()
+    private var RandomCocktails: List<Cocktail> = emptyList()
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadCheckedItems()
+
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -65,44 +70,14 @@ class SearchFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
         recyclerView.setHasFixedSize(true)
 
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Shake")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                // Handle failure
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                response.body?.let {
-                    val responseData = it.string()
-                    val gson = Gson()
-                    val cocktails = gson.fromJson(responseData, Cocktails::class.java)
-
-                    originalCocktails = cocktails.drinks
-
-                    activity?.runOnUiThread {
-                        val adapter = CocktailAdapter(originalCocktails)
-                        recyclerView.adapter = adapter
-                        adapter.notifyDataSetChanged()
-
-                        adapter.onItemClick = { selectedCocktail: Cocktail ->
-                            val intent = Intent(context, RecipeDetails::class.java)
-                            intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
-                            startActivity(intent)
-                        }
-                    }
-                }
-            }
-        })
+        val categories = listOf("Ordinary Drink", "Cocktail", "Shake", "Other / Unknown", "Cocoa", "Shot", "Coffee / Tea", "Homemade Liqueur", "Punch / Party Drink", "Beer", "Soft Drink")
+        val randomCategory = categories[Random.nextInt(categories.size)]
+        fetchCocktailsByCategory(randomCategory)
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 filterList(newText)
                 return true
@@ -110,43 +85,97 @@ class SearchFragment : Fragment() {
         })
     }
 
-    private fun filterList(query: String?) {
-        if (!query.isNullOrBlank()) {
-            val filteredList = ArrayList<Cocktail>()
+    private fun saveCheckedItem(cocktailId: Int, isChecked: Boolean) {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
 
-            val baseUrl = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s="
-            val apiUrl = "$baseUrl$query"
+        checkedItemsJson?.let {
+            val checkedItems = Gson().fromJson<MutableList<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+                .toMutableList()
 
-            val client = OkHttpClient()
-            val request = Request.Builder()
-                .url(apiUrl)
-                .build()
+            val index = checkedItems.indexOfFirst { it.first == cocktailId }
+            if (index != -1) {
+                checkedItems[index] = Pair(cocktailId, isChecked)
+            } else {
+                checkedItems.add(Pair(cocktailId, isChecked))
+            }
 
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    // Handle failure
+            sharedPreferences.edit().apply {
+                putString(SavedValueKey, Gson().toJson(checkedItems))
+                apply()
+            }
+        }
+    }
+    private fun loadCheckedItems(): List<Pair<Int, Boolean>> {
+        val sharedPreferences = requireActivity().getSharedPreferences(SharedPreferencesKey, Context.MODE_PRIVATE)
+        val checkedItemsJson = sharedPreferences.getString(SavedValueKey, null)
+
+        return checkedItemsJson?.let {
+            Gson().fromJson<List<Pair<Int, Boolean>>>(it, object : TypeToken<List<Pair<Int, Boolean>>>() {}.type)
+        } ?: emptyList()
+    }
+
+    private fun fetchCocktailsByCategory(categoryName: String?) {
+        CocktailsByCategoryFetcher.fetchCocktailsByCategory(categoryName) { cocktails ->
+            activity?.runOnUiThread {
+                val adapter = cocktails?.let { CocktailAdapter(cocktails.drinks) }
+                if (cocktails != null) {
+                    RandomCocktails = cocktails.drinks
                 }
 
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    response.body?.let {
-                        val responseData = it.string()
-                        val gson = Gson()
-                        val cocktails = gson.fromJson(responseData, Cocktails::class.java)
+                recyclerView.adapter = adapter
+                adapter?.notifyDataSetChanged()
 
-                        cocktails.drinks?.let { filteredList.addAll(it) }
+                adapter?.onItemClick = { selectedCocktail: Cocktail ->
+                    val intent = Intent(context, RecipeDetails::class.java)
+                    intent.putExtra("COCKTAIL_ID", selectedCocktail.cocktailId)
+                    startActivity(intent)
+                }
 
-                        activity?.runOnUiThread {
-                            val adapter = recyclerView.adapter as? CocktailAdapter
-                            adapter?.setFilteredList(filteredList)
-                        }
+                adapter?.onItemCheckChanged = { isChecked, position ->
+                    val selectedCocktail = RandomCocktails[position]
+
+                    if (isChecked) {
+                        showToast("Item added to Favorites")
+                        saveCheckedItem(selectedCocktail.cocktailId, true)
+
+                    } else {
+                        showToast("Item removed from Favorites")
+                        saveCheckedItem(selectedCocktail.cocktailId, false)
                     }
+
+                    // Notify the FavoriteFragment about the change
+                    val favoriteFragment = fragmentManager?.findFragmentByTag(FAVORITE_FRAGMENT_TAG) as? FavoriteFragment
+                    favoriteFragment?.updateFavoriteList()
                 }
-            })
-        } else {
-            val adapter = recyclerView.adapter as? CocktailAdapter
-            adapter?.setFilteredList(originalCocktails)
+            }
         }
     }
 
+    private fun showToast(str: String) {
+        Toast.makeText(requireContext(), str, Toast.LENGTH_SHORT).show()
+    }
+    private fun filterList(query: String?) {
+        if (!query.isNullOrBlank()) {
+            fetchCocktailsByQuery(query)
+        } else {
+            val adapter = recyclerView.adapter as? CocktailAdapter
+            adapter?.setFilteredList(RandomCocktails)
+        }
+    }
+    private fun fetchCocktailsByQuery(query: String) {
+        val filteredList = ArrayList<Cocktail>()
+
+        SearchByNameFetcher.fetchCocktailsByName(query) { cocktails ->
+            cocktails?.let {
+                filteredList.addAll(it.drinks ?: emptyList())
+
+                activity?.runOnUiThread {
+                    val adapter = recyclerView.adapter as? CocktailAdapter
+                    adapter?.setFilteredList(filteredList)
+                }
+            }
+        }
+    }
 }
 

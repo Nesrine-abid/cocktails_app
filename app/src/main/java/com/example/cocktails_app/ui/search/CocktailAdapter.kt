@@ -2,6 +2,7 @@ package com.example.cocktails_app.ui.search
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktails_app.R
@@ -12,11 +13,14 @@ import com.squareup.picasso.Picasso
 class DataViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
     val image: ShapeableImageView = itemView.findViewById(R.id.image)
     val cocktailName : TextView = itemView.findViewById (R.id.cocktailName)
+    val checkBox: CheckBox = itemView.findViewById (R.id.cbHeart)
+
 }
 
 class CocktailAdapter(private var cocktails: List<Cocktail>) :
     RecyclerView.Adapter<DataViewHolder>() {
 
+    var onItemCheckChanged: ((Boolean, Int) -> Unit)? = null
     var onItemClick : ((Cocktail) -> Unit)? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val itemview = LayoutInflater.from(parent.context).inflate(
@@ -27,11 +31,16 @@ class CocktailAdapter(private var cocktails: List<Cocktail>) :
 
     override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
         val currentItem = cocktails[position]
+
         Picasso.get().load(currentItem.cocktailImage).into(holder.image)
         holder.cocktailName.text = currentItem.cocktailName
 
         holder.itemView.setOnClickListener{
             onItemClick?.invoke(currentItem)
+        }
+
+        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            onItemCheckChanged?.invoke(isChecked, position)
         }
     }
     override fun getItemCount(): Int {
@@ -41,7 +50,6 @@ class CocktailAdapter(private var cocktails: List<Cocktail>) :
         this.cocktails = filteredList
         notifyDataSetChanged()
     }
-    
 }
 
 
