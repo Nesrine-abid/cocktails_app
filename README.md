@@ -22,3 +22,12 @@
 
 ### 5- CategoriesFragment :
 - Affiche la liste des catégories, et en cliquant sur chacune d'elles, l'utilisateur peut voir les cocktails de cette catégorie, avec la possibilité d'accéder aux détails de chaque cocktail. en cliquant sur chaqu'un on obtient les cocktails de cette catégorie avec possibilité d'accéder au details de chaque cocktail.
+
+---------------------------------------
+## Difficultés rencontrées :
+---------------------------------------
+
+### 1- Afficher la liste des favories :
+- On a pas pu afficher la liste des favories dans le fragment Favorites.
+
+### NB: le dossier "projetScreenShot" contient les différentes screenShots de l'application
